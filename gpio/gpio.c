@@ -124,6 +124,8 @@ static const char *searchPath [] =
   "/usr/sbin",
   "/bin",
   "/usr/bin",
+  "/usr/local/bin",
+  "/usr/local/sbin",
   NULL,
 } ;
 
