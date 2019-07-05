@@ -218,7 +218,7 @@ volatile unsigned int *_wiringPiTimerIrqRaw ;
 
 static volatile unsigned int piGpioBase = 0 ;
 
-const char *piModelNames [18] =
+const char *piModelNames [20] =
 {
   "Model A",	//  0
   "Model B",	//  1
@@ -228,7 +228,7 @@ const char *piModelNames [18] =
   "Alpha",	//  5
   "CM",		//  6
   "Unknown07",	// 07
-  "Pi 3",	// 08
+  "Pi 3B",	// 08
   "Pi Zero",	// 09
   "CM3",	// 10
   "Unknown11",	// 11
@@ -236,8 +236,10 @@ const char *piModelNames [18] =
   "Pi 3B+",	// 13
   "Pi 3A+",	// 14
   "Unknown15",	// 15
-  "Unknown16",	// 16
+  "CM3+",	// 16
   "Pi 4B",	// 17
+  "Unknown18",	// 18
+  "Unknown19",	// 19
 } ;
 
 const char *piRevisionNames [18] =
@@ -2243,7 +2245,7 @@ int wiringPiSetup (void)
 
   piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
 
-  if ((model == PI_MODEL_CM) || (model == PI_MODEL_CM3))
+  if ((model == PI_MODEL_CM) || (model == PI_MODEL_CM3) || (model == PI_MODEL_CM3P))
     wiringPiMode = WPI_MODE_GPIO ;
   else
     wiringPiMode = WPI_MODE_PINS ;

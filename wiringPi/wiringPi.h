@@ -95,12 +95,13 @@
 #define	PI_ALPHA		 5
 #define	PI_MODEL_CM		 6
 #define	PI_MODEL_07		 7
-#define	PI_MODEL_3		 8
+#define	PI_MODEL_3B		 8
 #define	PI_MODEL_ZERO		 9
 #define	PI_MODEL_CM3		10
 #define	PI_MODEL_ZERO_W		12
 #define	PI_MODEL_3BP 		13
 #define	PI_MODEL_3AP 		14
+#define	PI_MODEL_CM3P 		16
 #define	PI_MODEL_4B 		17
 
 #define	PI_VERSION_1		0
@@ -115,7 +116,7 @@
 #define	PI_MAKER_EMBEST4	4
 #define	PI_MAKER_STADIUM	5
 
-extern const char *piModelNames    [18] ;
+extern const char *piModelNames    [20] ;
 extern const char *piRevisionNames [18] ;
 extern const char *piMakerNames    [16] ;
 extern const int   piMemorySize    [ 8] ;
