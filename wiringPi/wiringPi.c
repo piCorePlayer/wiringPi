@@ -215,6 +215,7 @@ volatile unsigned int *_wiringPiTimerIrqRaw ;
 
 #define	GPIO_PERI_BASE_OLD	0x20000000
 #define	GPIO_PERI_BASE_NEW	0x3F000000
+#define	GPIO_PERI_BASE_PI4	0xFE000000
 
 static volatile unsigned int piGpioBase = 0 ;
 
@@ -543,6 +544,10 @@ static uint8_t gpioToFEN [] =
 //	GPIO Pin pull up/down register
 
 #define	GPPUD	37
+#define GPPUD0  57   //Pi4 Pins 15:0
+#define GPPUD1  58   //Pi4 Pins 31:16
+#define GPPUD2  59   //Pi4 Pins 47:32
+#define GPPUD3  60   //Pi4 Pins 57:48
 
 // gpioToPUDCLK
 //	(Word) offset to the Pull Up Down Clock regsiter
@@ -1499,6 +1504,14 @@ void pullUpDnControl (int pin, int pud)
 {
   struct wiringPiNodeStruct *node = wiringPiNodes ;
 
+  uint32_t  pull, bits;
+  int shift = (pin & 0xf) << 1;
+
+  /////this needs fixed....
+  int   model, rev, mem, maker, overVolted ;
+  piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
+
+
   setupCheck ("pullUpDnControl") ;
 
   if ((pin & PI_GPIO_MASK) == 0)		// On-Board Pin
@@ -1510,11 +1523,31 @@ void pullUpDnControl (int pin, int pud)
     else if (wiringPiMode != WPI_MODE_GPIO)
       return ;
 
-    *(gpio + GPPUD)              = pud & 3 ;		delayMicroseconds (5) ;
-    *(gpio + gpioToPUDCLK [pin]) = 1 << (pin & 31) ;	delayMicroseconds (5) ;
-    
-    *(gpio + GPPUD)              = 0 ;			delayMicroseconds (5) ;
-    *(gpio + gpioToPUDCLK [pin]) = 0 ;			delayMicroseconds (5) ;
+    if ( model == PI_MODEL_4B )
+    {
+        switch (pud) {
+           case PUD_OFF:
+              pull = 0;
+              break;
+           case PUD_UP:
+              pull = 1;
+              break;
+           case PUD_DOWN:
+              pull = 2;
+              break;
+        }
+        bits = *(gpio + GPPUD0 + (pin>>4));
+        bits &= ~(3 << shift);
+        bits |= (pull << shift);
+        *(gpio + GPPUD0 + (pin>>4)) = bits;
+
+    } else {
+        *(gpio + GPPUD)              = pud & 3 ;		delayMicroseconds (5) ;
+        *(gpio + gpioToPUDCLK [pin]) = 1 << (pin & 31) ;	delayMicroseconds (5) ;
+        *(gpio + GPPUD)              = 0 ;			delayMicroseconds (5) ;
+        *(gpio + gpioToPUDCLK [pin]) = 0 ;			delayMicroseconds (5) ;
+    }
+
   }
   else						// Extension module
   {
@@ -1523,6 +1556,7 @@ void pullUpDnControl (int pin, int pud)
     return ;
   }
 }
+
 
 
 /*
@@ -2271,7 +2305,9 @@ int wiringPiSetup (void)
     case PI_MODEL_ZERO:	case PI_MODEL_ZERO_W:
       piGpioBase = GPIO_PERI_BASE_OLD ;
       break ;
-
+    case PI_MODEL_4B:
+      piGpioBase = GPIO_PERI_BASE_PI4 ;
+      break ;
     default:
       piGpioBase = GPIO_PERI_BASE_NEW ;
       break ;
