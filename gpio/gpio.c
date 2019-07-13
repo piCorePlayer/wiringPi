@@ -65,7 +65,7 @@ int wpMode ;
 char *usage = "Usage: gpio -v                Show Version\n"
               "       gpio -h                Show Help\n"
               "       gpio -V                Show gpio Layout version\n"
-              "       gpio [-g|-1|-p] ...    Use gpio | physical | piFace pin numbering scheme...\n"
+              "       gpio [-g|-1|-p] ...    Use bcm-gpio | physical | piFace pin numbering scheme...\n"
               "       [-x extension:params] [[ -x ...]] ...\n"
               "       gpio <mode/read/write/aread/awritewb/pwm/pwmTone/clock> ...\n"
               "       gpio <toggle/blink> <pin>\n"
@@ -85,7 +85,6 @@ char *usage = "Usage: gpio -v                Show Version\n"
               "       gpio usbp high/low\n"
               "       gpio gbr <channel>\n"
               "       gpio gbw <channel> <value>" ;	// No trailing newline needed here.
-
 
 #ifdef	NOT_FOR_NOW
 /*

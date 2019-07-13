@@ -218,6 +218,7 @@ volatile unsigned int *_wiringPiTimerIrqRaw ;
 #define	GPIO_PERI_BASE_PI4	0xFE000000
 
 static volatile unsigned int piGpioBase = 0 ;
+static volatile unsigned int piModel = 0 ;
 
 const char *piModelNames [20] =
 {
@@ -1507,11 +1508,6 @@ void pullUpDnControl (int pin, int pud)
   uint32_t  pull, bits;
   int shift = (pin & 0xf) << 1;
 
-  /////this needs fixed....
-  int   model, rev, mem, maker, overVolted ;
-  piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
-
-
   setupCheck ("pullUpDnControl") ;
 
   if ((pin & PI_GPIO_MASK) == 0)		// On-Board Pin
@@ -1523,23 +1519,26 @@ void pullUpDnControl (int pin, int pud)
     else if (wiringPiMode != WPI_MODE_GPIO)
       return ;
 
-    if ( model == PI_MODEL_4B )
+    if ( piModel == PI_MODEL_4B )
     {
-        switch (pud) {
-           case PUD_OFF:
-              pull = 0;
-              break;
-           case PUD_UP:
-              pull = 1;
-              break;
-           case PUD_DOWN:
-              pull = 2;
-              break;
-        }
-        bits = *(gpio + GPPUD0 + (pin>>4));
-        bits &= ~(3 << shift);
-        bits |= (pull << shift);
-        *(gpio + GPPUD0 + (pin>>4)) = bits;
+      switch (pud) {  // The PI4B uses different numbering than previous pi's
+        case PUD_OFF: //0
+          pull = 0;
+          break;
+        case PUD_UP:  //2
+          pull = 1;
+          break;
+        case PUD_DOWN: //1
+          pull = 2;
+          break;
+        default:
+          pull = 0;
+          break;  
+      }
+      bits = *(gpio + GPPUD0 + (pin>>4));
+      bits &= ~(3 << shift);
+      bits |= (pull << shift);
+      *(gpio + GPPUD0 + (pin>>4)) = bits;
 
     } else {
         *(gpio + GPPUD)              = pud & 3 ;		delayMicroseconds (5) ;
@@ -1548,16 +1547,12 @@ void pullUpDnControl (int pin, int pud)
         *(gpio + gpioToPUDCLK [pin]) = 0 ;			delayMicroseconds (5) ;
     }
 
-  }
-  else						// Extension module
-  {
+  } else {						// Extension module
     if ((node = wiringPiFindNode (pin)) != NULL)
       node->pullUpDnControl (node, pin, pud) ;
     return ;
   }
 }
-
-
 
 /*
  * digitalRead:
@@ -2278,6 +2273,8 @@ int wiringPiSetup (void)
 //	don't really many anything, so force native BCM mode anyway.
 
   piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
+  // set global variable for model, as we need to reuse it later in the pull up/down routine.
+  piModel = model;
 
   if ((model == PI_MODEL_CM) || (model == PI_MODEL_CM3) || (model == PI_MODEL_CM3P))
     wiringPiMode = WPI_MODE_GPIO ;
